@@ -14,9 +14,9 @@ REQUIRED FIELDS: name, createdAt, address - minimal name field required for a pr
   }
 */
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  dob: { type: Date },
-  address: { type: String, required: true },
+  name: { type: String, required: [true, 'Name is required.'] },
+  dob: { type: Date, max: [Date.now(), 'Date of birth cannot be later than today.'] },
+  address: { type: String, required: [true, 'Address is required.'] },
   description: { type: String },
   createdAt: { type: Date, default: Date.now() },
 });
