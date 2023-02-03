@@ -1,6 +1,5 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import cors from 'cors';
 import User from './model/UserModel.js';
 
 const MONGO_URI =
@@ -15,25 +14,23 @@ const main = async () => {
     const app = express();
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
-    app.use(cors());
 
     // User Routes
-    // Get all users in the collection up to a limit of 10
+    // GET all users in the collection up to a limit of 10
     app.get('/users', getAllUserController);
     async function getAllUserController(req, res) {
-      // Query params for current page and document limit
-      // Default page of 1 and limit of 10
-      const currentPage = req.query.page ? req.query.page : 1;
-      const recordLimit = req.query.limit ? req.query.limit : 10;
-      // Offset value for pagination
-      const offSet = (currentPage - 1) * recordLimit;
-      const allUsers = await User.find().limit(recordLimit).skip(offSet);
+      // Get total documents to check total pages
+      const totalCount = await User.count();
+      // Offset value (number of documents to skip) for pagination
+      const { offSet, pageLimit } = calculatePagination(req.query, totalCount);
+      const allUsers = await User.find().limit(pageLimit).skip(offSet);
       res.status(200).json(allUsers);
     }
 
     app.listen(3000);
   } catch (err) {
-    console.log('App error:', err);
+    // Logging for analytics of app error should be implemented here
+    console.log('Fatal App Init Error:', err);
   }
 };
 main();
@@ -44,4 +41,26 @@ class HTTPException extends Error {
     this.name = name;
     this.statusCode = statusCode;
   }
+}
+
+// Pagination function to calculate record offset and retrieve limit
+// Checks of invalid page numbers
+function calculatePagination(query, totalCount) {
+  // Query params for current page and document limit
+  // Default page of 1 and limit of 10
+  const currentPage = query.page ? query.page : 1;
+  const pageLimit = query.limit ? query.limit : 10;
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCount / pageLimit);
+  // Checking for negative page numbers
+  //! test for over page
+  if (currentPage < 1 || currentPage > totalPages) {
+    throw new HTTPException(
+      'Invalid page number.',
+      400,
+      `Page number ${currentPage} does not exist`,
+    );
+  }
+  const offSet = (currentPage - 1) * pageLimit;
+  return { offSet, pageLimit };
 }

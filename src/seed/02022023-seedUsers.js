@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import User from '../model/UserModel.js';
+import User from '../model/UserModel';
 
 dotenv.config();
 const mongoURI = process.env.MONGODB_URI;
@@ -17,7 +17,7 @@ async function seedUsers() {
     console.log('Mongo connected');
     // Drop existing collection
     // Generate 10 seed Users
-    const seedUsers = [];
+    const seededUsers = [];
     for (let i = 0; i < 10; i += 1) {
       const newUser = {
         name: faker.name.fullName(),
@@ -27,7 +27,7 @@ async function seedUsers() {
       };
       seedUsers.push(newUser);
     }
-    await User.insertMany(seedUsers);
+    await User.insertMany(seededUsers);
     console.log('Users seeded.');
     mongoose.disconnect();
   } catch (err) {
