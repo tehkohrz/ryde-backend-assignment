@@ -96,6 +96,28 @@ const main = async () => {
       res.status(200).json(updatedUser);
     }
 
+    // DELETE Route to delete user based on user id
+    app.delete('/users/:id', deleteUserController);
+    async function deleteUserController(req, res) {
+      const { id } = req.params;
+      // Id params not valid return not found throw http exception
+      // Valid id is ObjectId type/ 24 characters in length
+      if (id.length !== 24) {
+        throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
+      }
+      const deletedUser = await User.findByIdAndDelete(id);
+      // Invalid query ie user id does not exist will return null from DB
+      if (deletedUser === null) {
+        throw new HTTPException(
+          'User ID not found.',
+          404,
+          `The User Id: ${id} cannot be found.`,
+        );
+      }
+      // Return deleted user details
+      res.status(200).json(deletedUser);
+    }
+
     app.listen(3000);
   } catch (err) {
     // Logging for analytics of app error should be implemented here
