@@ -17,7 +17,7 @@ const main = async () => {
 
     // User Routes
     // GET all users in the collection up to a limit of 10
-    app.get('/users', getAllUserController);
+    app.get('/users', routeErrorHandler(getAllUserController));
     async function getAllUserController(req, res) {
       // Get total documents to check total pages
       const totalCount = await User.count();
@@ -28,7 +28,7 @@ const main = async () => {
     }
 
     // GET specific user based on id
-    app.get('/users/:id', getUserController);
+    app.get('/users/:id', routeErrorHandler(getUserController));
     async function getUserController(req, res) {
       const { id } = req.params;
       // Id params not valid return not found throw http exception
@@ -50,7 +50,7 @@ const main = async () => {
     }
 
     // CREATE new user
-    app.post('/users', createUserController);
+    app.post('/users', routeErrorHandler(createUserController));
     async function createUserController(req, res) {
       const newUser = req.body;
       // No data recieved within the request body
@@ -69,7 +69,7 @@ const main = async () => {
     }
 
     // UPDATE User based on user id
-    app.put('/users/:id', updateUserController);
+    app.put('/users/:id', routeErrorHandler(updateUserController));
     async function updateUserController(req, res) {
       const { id } = req.params;
       const userData = req.body;
@@ -97,14 +97,14 @@ const main = async () => {
     }
 
     // DELETE Route to delete user based on user id
-    app.delete('/users/:id', deleteUserController);
+    app.delete('/users/:id', routeErrorHandler(deleteUserController));
     async function deleteUserController(req, res) {
       const { id } = req.params;
       // Id params not valid return not found throw http exception
       // Valid id is ObjectId type/ 24 characters in length
-      if (id.length !== 24) {
-        throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
-      }
+      // if (id.length !== 24) {
+      //   throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
+      // }
       const deletedUser = await User.findByIdAndDelete(id);
       // Invalid query ie user id does not exist will return null from DB
       if (deletedUser === null) {
@@ -117,7 +117,6 @@ const main = async () => {
       // Return deleted user details
       res.status(200).json(deletedUser);
     }
-
     app.listen(3000);
   } catch (err) {
     // Logging for analytics of app error should be implemented here
@@ -156,17 +155,37 @@ function calculatePagination(query, totalCount) {
   return { offSet, pageLimit };
 }
 
-//! for error handler
-// async function validateUser(user) {
-//   try {
-//     await User.validate(user);
-//     return true;
-//   } catch (err) {
-//     const fields = Object.keys(err.errors);
-//     const validationMsg = [];
-//     fields.forEach(field => {
-//       validationMsg.push(err.errors[field]?.message);
-//     });
-//     throw new HTTPException('Input invalid', 400, validationMsg.join('\n'));
-//   }
-// }
+function routeErrorHandler(routeController) {
+  return async (req, res, next) => {
+    try {
+      await routeController(req, res, next);
+    } catch (err) {
+      // Error is a case of known exception return the error to the cilent
+      if (err instanceof HTTPException) {
+        res.send(err.statusCode).json(err);
+      }
+      // Mongoose validation error, form the exception message for the cilent
+      else if (err instanceof mongoose.Error.ValidationError) {
+        const fields = Object.keys(err.errors);
+        const errorMsg = [];
+        fields.forEach(field => {
+          errorMsg.push(err.errors[field]?.message);
+        });
+        const errorResponse = new HTTPException(
+          'Input validation failed',
+          400,
+          errorMsg.join('\n'),
+        );
+        res.send(errorResponse.statusCode).json(errorResponse);
+      } else if (err instanceof mongoose.Error.CastError) {
+        const message = `Field (${err.kind}): ${err.reason.message}`;
+
+        res.status(400).json(message);
+      } else {
+        // Any unanticipated errors are caught and return as 500 internal server error
+        const message = 'Something went wrong!';
+        res.status(500).json({ message });
+      }
+    }
+  };
+}
