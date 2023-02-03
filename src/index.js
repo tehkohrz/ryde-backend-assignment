@@ -49,6 +49,24 @@ const main = async () => {
       res.status(200).json(requestedUser);
     }
 
+    // CREATE new user
+    app.post('/users', createUserController);
+    async function createUserController(req, res) {
+      const newUser = req.body;
+      // No data recieved within the request body
+      if (!newUser) {
+        throw new HTTPException(
+          'No user information recieved.',
+          400,
+          'Request invalid as no user information received to be posted.',
+        );
+      }
+      // Mongoose validation will throw a mongoose error
+      const createdUser = await User.create(newUser);
+      res.status(201).json(createdUser);
+      // }
+    }
+
     app.listen(3000);
   } catch (err) {
     // Logging for analytics of app error should be implemented here
