@@ -27,6 +27,28 @@ const main = async () => {
       res.status(200).json(allUsers);
     }
 
+    // GET specific user based on id
+    app.get('/users/:id', getUserController);
+    async function getUserController(req, res) {
+      const { id } = req.params;
+      // Id params not valid return not found throw http exception
+      // Valid id is ObjectId type/ 24 characters in length
+      if (id.length !== 24) {
+        throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
+      }
+      const requestedUser = await User.findById(id);
+      // No matching id found
+      if (requestedUser === null) {
+        throw new HTTPException(
+          'No user found',
+          404,
+          `No user matching the ID ${id}.`,
+        );
+      }
+      // Matching user found and returned
+      res.status(200).json(requestedUser);
+    }
+
     app.listen(3000);
   } catch (err) {
     // Logging for analytics of app error should be implemented here
