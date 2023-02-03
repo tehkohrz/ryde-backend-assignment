@@ -63,8 +63,37 @@ const main = async () => {
       }
       // Mongoose validation will throw a mongoose error
       const createdUser = await User.create(newUser);
+      // Returns new user with allocated _id to the cilent
       res.status(201).json(createdUser);
       // }
+    }
+
+    // UPDATE User based on user id
+    app.put('/users/:id', updateUserController);
+    async function updateUserController(req, res) {
+      const { id } = req.params;
+      const userData = req.body;
+      // Id params not valid return not found throw http exception
+      // Valid id is ObjectId type/ 24 characters in length
+      if (id.length !== 24) {
+        throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
+      }
+      // No user data received
+      if (!userData) {
+        throw new HTTPException(
+          'No user information recieved.',
+          400,
+          'Request invalid as no user information received to be posted.',
+        );
+      }
+      // Cilent has to send full User schema to ensure valid update
+      // runValidators option not working in the update method
+      await User.validate(userData);
+      const updatedUser = await User.findByIdAndUpdate(id, userData, {
+        returnDocument: 'after',
+      });
+      // Returns updated document to the cilent
+      res.status(200).json(updatedUser);
     }
 
     app.listen(3000);
@@ -104,3 +133,18 @@ function calculatePagination(query, totalCount) {
   const offSet = (currentPage - 1) * pageLimit;
   return { offSet, pageLimit };
 }
+
+//! for error handler
+// async function validateUser(user) {
+//   try {
+//     await User.validate(user);
+//     return true;
+//   } catch (err) {
+//     const fields = Object.keys(err.errors);
+//     const validationMsg = [];
+//     fields.forEach(field => {
+//       validationMsg.push(err.errors[field]?.message);
+//     });
+//     throw new HTTPException('Input invalid', 400, validationMsg.join('\n'));
+//   }
+// }
