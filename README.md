@@ -1,56 +1,125 @@
-# Ryde Backend Developer Test Assignment
+# Overview
 
-## Context
+This API allows the cilent to interface with the "ryde-assignment" database and query the "users" table. The API implements RESTful API design pattern and provides CRUD operations for "user" data.
 
-Build a RESTful API that can get/create/update/delete user data from a
-persistence database
+# Design Assumptions
 
-**User Model**
+- User is of the same origin as the backend API, CORS is not required.
+- Endpoints receieve and send data in JSON.
+- For the purpose of the assignment, the application is hosted on localhost:3000.
+- MongoDB is utilised, the database is hosted with the authorised URI with the application for ease of the assessor's access.
 
-> {
-> "id": "xxx", // user ID<br/>
-> "name": "test", // user name<br/>
-> "dob": "", // date of birth<br/>
-> "address": "", // user address<br/>
-> "description": "", // user description<br/>
-> "createdAt": "" // user created date<br/>
-> }
+# Getting Started
 
-## Requirements
+1. `npm install` <br/>
+2. `cd src`<br/>
+3. `npm nodemon index.js`<br/>
 
-**Functionality**
+# Endpoints
 
-- The API should follow typical RESTful API design pattern.
-- The data should be saved in the DB.
-- Provide proper unit test.
-- Provide proper API document.
+## Method: GET - "localhost:3000/users"
 
-## Tech stack
+Queries the databse for all user documents within the collection "users". Documents are paginated with a default limit of 10 documents per page.
 
-- We use Python, Nodejs, Go & PHP
-- Use any framework.
-- Use any DB. NoSQL DB is preferred.
+### Query Parameters
 
-## Bonus
+> **?page : number** - Current page that the cilent is querying. <br/> **?pageLimit : number** - The maximum number of documents to be retrieved per page. <br/>
 
-- Write clear documentation on how it’s designed and how to run the code.
-- Write good in-code comments.
-- Write good commit messages.
+### Response
 
-## Advanced requirements
+#### 200 Status
 
-These are used for some further challenges. You can safely skip them but feel
-free to try out.
+> Returns array of user documents according to the query parameters.<br/> > `Array < {_id: 24-bit string,
+ name: string,
+address: string,
+ description: string} >`
 
-- Provide a complete user auth (authentication/authorization/etc.) strategy,
-  such as OAuth.
-- Provide a complete logging (when/how/etc.) strategy.
-- Imagine we have a new requirement right now that the user instances need
-  to link to each other, i.e., a list of “followers/following” or “friends”. Can
-  you find out how you would design the model structure and what API you
-  would build for querying or modifying it?
-- Related to the requirement above, suppose the address of user now includes
-  a geographic coordinate(i.e., latitude and longitude), can you build an API
-  that,
-- given a user name
-- return the nearby friends
+## Method: CREATE - "localhost:3000/users"
+
+### Query Parameters
+
+> Request: `{ body:{
+name: string,
+address: string,
+description: string}
+}}`
+
+### Response
+
+#### 200 Status
+
+> Returns document of created user with "\_id" assigned.<br/> `{_id: 24-bit string,
+ name: string,
+address: string,
+ description: string}`
+
+#### 400 Status
+
+> No user data receive for creation or user data failed validation. Error name and detailed message will be returned. <br/> `{name: string, statusCode: number, message:string}`
+
+## Method: GET - "localhost:3000/users:id"
+
+### Query Parameters
+
+> **?id : 24bit string** - User Id to be queried.
+
+### Response
+
+#### 200 Status
+
+> Returns document with matching user id.<br/> `{_id: 24-bit string,
+ name: string,
+address: string,
+ description: string}`
+
+#### 400 Status
+
+> Queried User Id is not a valid User Id. Error name and detailed message will be returned. <br/> `{name: string, statusCode: number, message:string}`
+
+#### 404 Status
+
+> Socument matching the queried User Id was not found. Error name and detailed message will be returned. <br/> `{name: string, statusCode: number, message:string}`
+
+## Method: PUT - "localhost:3000/users/:id"
+
+### Query Parameters
+
+> **?id : 24bit string** - User Id to be queried. <br/>
+> Request: `{ body:{
+  _id: 24bit string,
+name: string,
+address: string,
+description: string}
+}}`
+
+### Response
+
+#### 200 Status
+
+> Returns document with updated user document.<br/> `{_id: 24-bit string,
+ name: string,
+address: string,
+ description: string}`
+
+#### 400 Status
+
+> User Id query not valid or new user data failed database validation. <br/> `{name: string, statusCode: number, message:string}`
+
+## Method: DELETE - "localhost:3000/users/:id"
+
+### Query Parameters
+
+> **?id : 24bit string** - User Id to be queried. <br/>
+
+### Response
+
+#### 200 Status
+
+> Returns document of deleted user.<br/> `{_id: 24-bit string,
+ name: string,
+address: string,
+ description: string}`
+
+#### 400 Status
+
+> User Id query not valid or document of matching User Id was not found. <br/> `{name: string, statusCode: number, message:string}`
