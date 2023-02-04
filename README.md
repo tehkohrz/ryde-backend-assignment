@@ -123,3 +123,7 @@ address: string,
 #### 400 Status
 
 > User Id query not valid or document of matching User Id was not found. <br/> `{name: string, statusCode: number, message:string}`
+
+## Testing
+
+Run `npm test` to start application testing suite using Jest.
