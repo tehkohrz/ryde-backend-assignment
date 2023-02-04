@@ -1,4 +1,4 @@
-import { HTTPException } from '../controllers/errorHandler.js';
+import HTTPException from '../controllers/HTTPException.js';
 import calculatePagination from '../controllers/helpers.js';
 
 describe('Helper Function', () => {

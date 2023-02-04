@@ -1,5 +1,5 @@
 import User from '../model/UserModel.js';
-import { HTTPException } from './errorHandler.js';
+import HTTPException from './HTTPException.js';
 import calculatePagination from './helpers.js';
 
 async function getAllUserController(req, res) {
@@ -32,7 +32,7 @@ async function getUserController(req, res) {
 async function createUserController(req, res) {
   const newUser = req.body;
   // No data recieved within the request body
-  if (!newUser) {
+  if (Object.keys(newUser) < 1) {
     throw new HTTPException(
       'No user information recieved.',
       400,
@@ -54,7 +54,7 @@ async function updateUserController(req, res) {
     throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
   }
   // No user data received
-  if (!userData) {
+  if (Object.keys(userData) < 1) {
     throw new HTTPException(
       'No user information recieved.',
       400,
@@ -74,9 +74,9 @@ async function deleteUserController(req, res) {
   const { id } = req.params;
   // Id params not valid return not found throw http exception
   // Valid id is ObjectId type/ 24 characters in length
-  // if (id.length !== 24) {
-  //   throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
-  // }
+  if (id.length !== 24) {
+    throw new HTTPException('Request invalid', 400, 'User ID is invalid.');
+  }
   const deletedUser = await User.findByIdAndDelete(id);
   // Invalid query ie user id does not exist will return null from DB
   if (deletedUser === null) {

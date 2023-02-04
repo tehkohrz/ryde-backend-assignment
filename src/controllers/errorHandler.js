@@ -1,12 +1,5 @@
 import mongoose from 'mongoose';
-
-class HTTPException extends Error {
-  constructor(name, statusCode, message) {
-    super(message);
-    this.name = name;
-    this.statusCode = statusCode;
-  }
-}
+import HTTPException from './HTTPException.js';
 
 function routeErrorHandler(routeController) {
   return async (req, res, next) => {
@@ -15,7 +8,7 @@ function routeErrorHandler(routeController) {
     } catch (err) {
       // Error is a case of known exception return the error to the cilent
       if (err instanceof HTTPException) {
-        res.send(err.statusCode).json(err);
+        res.status(err.statusCode).json(err);
       }
       // Mongoose validation error, form the exception message for the cilent
       else if (err instanceof mongoose.Error.ValidationError) {
@@ -29,7 +22,7 @@ function routeErrorHandler(routeController) {
           400,
           errorMsg.join('\n'),
         );
-        res.send(errorResponse.statusCode).json(errorResponse);
+        res.status(errorResponse.statusCode).json(errorResponse);
       } else if (err instanceof mongoose.Error.CastError) {
         const message = `Field (${err.kind}): ${err.reason.message}`;
 
@@ -44,4 +37,4 @@ function routeErrorHandler(routeController) {
   };
 }
 
-export { HTTPException, routeErrorHandler };
+export default routeErrorHandler;

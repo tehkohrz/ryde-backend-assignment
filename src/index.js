@@ -7,7 +7,7 @@ import {
   updateUserController,
   createUserController,
 } from './controllers/user_controllers.js';
-import { routeErrorHandler } from './controllers/errorHandler.js';
+import routeErrorHandler from './controllers/errorHandler.js';
 
 const MONGO_URI =
   'mongodb+srv://ryde-user:yGOiedfpWhoKhSf1@personaldev.3tzwrzd.mongodb.net/ryde-assignment';

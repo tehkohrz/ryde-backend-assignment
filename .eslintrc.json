@@ -20,6 +20,10 @@
     "no-unused-vars": "warn",
     "prettier/prettier": "error",
     "import/extensions": "off",
-    "no-restricted-globals": "off"
+    "no-restricted-globals": "off",
+    "import/no-extraneous-dependencies": [
+      "off",
+      { "devDependencies": ["**/*.test.js", "**/*.spec.js"] }
+    ]
   }
 }

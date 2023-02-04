@@ -1,4 +1,4 @@
-import { HTTPException } from './errorHandler.js';
+import HTTPException from './HTTPException.js';
 
 // Pagination function to calculate record offset and retrieve limit
 // Checks of invalid page numbers
